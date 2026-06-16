@@ -21,7 +21,7 @@ Built as a modern rewrite of a legacy procedural PHP system: the same domain (in
 - **Incident logging** — create incidents singly or in bulk, with validated casualty condition (`meninggal`, `ringan`, `sedang`, `berat`), gate/location, hospital, and flight number.
 - **Flight management** — companion CRUD for flight records.
 - **Analytics dashboard** — doughnut chart breakdown by casualty condition (Chart.js) with date filtering, plus JSON drill-down endpoints.
-- **Gate-level incident map** — per-gate incident counts for a selected date.
+- **Interactive incident map** — a Leaflet map with **satellite imagery** (Esri World Imagery) plotting per-gate incidents for a selected date: clustered markers sized/colored by count, popups with the per-condition breakdown, and tiles that follow the dark/light theme.
 - **User management** — admin-only CRUD; password hashes are never exposed in responses.
 - **Modern UI** — Tailwind CSS + Alpine.js, responsive, with a polished dark mode and toast notifications.
 
@@ -34,9 +34,9 @@ Built as a modern rewrite of a legacy procedural PHP system: the same domain (in
 | Framework | Laravel 11.x (PHP 8.2+) |
 | Auth / Scaffolding | Laravel Breeze (Blade), customized for NIP login |
 | Database | SQLite (zero-config default) · MySQL 8 (Docker) |
-| Frontend | Blade, Tailwind CSS, Alpine.js, Chart.js |
+| Frontend | Blade, Tailwind CSS, Alpine.js, Chart.js, Leaflet |
 | Build | Vite |
-| Testing | Pest (38 tests) |
+| Testing | Pest (40 tests) |
 | Tooling | Laravel Pint, Composer, npm |
 
 ---
@@ -106,7 +106,7 @@ SQLite remains the zero-config option for local development outside Docker.
 - **RBAC middleware** — `EnsureUserHasRole` (`role:admin`) guards user management; admins implicitly pass all role checks.
 - **Auth** — NIP + password via a customized Breeze `AuthenticatedSessionController` and `LoginRequest` with rate limiting and session regeneration. Email-dependent Breeze flows (registration, password reset, email verification, password confirmation) are intentionally removed.
 - **Frontend** — server-rendered Blade enhanced with Alpine.js for interactivity and Chart.js for analytics, styled with Tailwind (dark mode first).
-- **Tests** — 38 Pest feature tests cover auth, RBAC, incident/flight CRUD, dashboard, map, and user management.
+- **Tests** — 40 Pest feature tests cover auth, RBAC, incident/flight CRUD, dashboard, map, and user management.
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for more detail.
 
@@ -119,7 +119,7 @@ This project re-implements a legacy procedural PHP app (raw SQL, mixed logic-and
 ## Testing
 
 ```bash
-php artisan test     # 38 Pest tests
+php artisan test     # 40 Pest tests
 npm run build        # production asset build
 ```
 

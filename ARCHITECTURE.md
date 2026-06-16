@@ -58,7 +58,14 @@ input.
 
 ### Frontend (`resources/`)
 Blade layouts and components, Tailwind for styling (dark-mode first), Alpine.js
-for toasts/menus, and Chart.js for the dashboard doughnut chart. Built with Vite.
+for toasts/menus, Chart.js for the dashboard doughnut chart, and Leaflet for the
+interactive satellite incident map. Built with Vite.
+
+### Map support (`app/Support/`)
+`GateCoordinates` maps each airport gate code to a deterministic synthetic
+lat/lng around a generic terminal center, so `MapController` can emit per-gate
+incident aggregates as JSON for the Leaflet front end (Esri satellite tiles,
+clustered markers, theme-aware basemap).
 
 ### Data (`database/`)
 - Migrations define the schema (users, incidents, flights, sessions, cache,
@@ -69,7 +76,7 @@ for toasts/menus, and Chart.js for the dashboard doughnut chart. Built with Vite
 
 ## Testing
 
-38 Pest feature tests in `tests/Feature` cover authentication, RBAC,
+40 Pest feature tests in `tests/Feature` cover authentication, RBAC,
 incident/flight CRUD, the dashboard, the map, drill-down detail endpoints, and
 user management. Run with `php artisan test`.
 
