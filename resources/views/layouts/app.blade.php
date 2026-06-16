@@ -27,6 +27,8 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        @stack('styles')
     </head>
     <body class="h-full font-sans">
         <div x-data="{ sidebarOpen: false }" class="min-h-full">

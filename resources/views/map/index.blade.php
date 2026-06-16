@@ -5,7 +5,7 @@
         {{-- Heading + date filter + summary --}}
         <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ __('Airport gate map') }}</h1>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">{{ __('Incident live map') }}</h1>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $totalIncidents }}</span> {{ __('incidents across') }}
                     <span class="font-semibold text-slate-700 dark:text-slate-200">{{ $activeGates }}</span> {{ __('gate(s) on') }}
@@ -26,64 +26,67 @@
 
         {{-- Map card --}}
         <div class="card p-6">
-            {{-- Legend --}}
-            <div class="mb-6 flex flex-wrap items-center gap-6 text-sm text-slate-600 dark:text-slate-400">
+            {{-- Legend: marker scale + per-condition colors --}}
+            <div class="mb-5 flex flex-wrap items-center gap-x-6 gap-y-3 text-sm text-slate-600 dark:text-slate-400">
                 <div class="flex items-center gap-2">
-                    <span class="inline-block h-3.5 w-3.5 rounded bg-slate-200 ring-1 ring-inset ring-slate-300 dark:bg-slate-800 dark:ring-slate-700"></span>
-                    {{ __('No incidents') }}
+                    <span class="inline-flex h-4 w-4 items-center justify-center rounded-full bg-slate-400/30 ring-1 ring-inset ring-slate-400/50"></span>
+                    <span class="inline-flex h-2.5 w-2.5 items-center justify-center rounded-full bg-slate-400/30 ring-1 ring-inset ring-slate-400/50"></span>
+                    {{ __('Marker size ∝ incident count') }}
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="relative inline-flex h-3.5 w-3.5">
-                        <span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
-                        <span class="relative inline-flex h-3.5 w-3.5 rounded-full bg-red-500"></span>
-                    </span>
-                    {{ __('Gate with incidents') }}
-                </div>
+                @foreach ($conditionMeta as $meta)
+                    <div class="flex items-center gap-2">
+                        <span class="inline-block h-3 w-3 rounded-full" style="background: {{ $meta['color'] }}"></span>
+                        {{ $meta['label'] }}
+                    </div>
+                @endforeach
             </div>
 
-            {{-- Terminal schematic --}}
-            <div class="overflow-x-auto">
-                <div class="inline-block min-w-full">
-                    {{-- Terminal spine --}}
-                    <div class="mb-5 flex items-center gap-3">
-                        <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{{ __('Terminal') }}</span>
-                        <div class="h-2 flex-1 rounded-full bg-gradient-to-r from-brand-200 via-brand-500 to-brand-200 dark:from-brand-900 dark:via-brand-500 dark:to-brand-900"></div>
-                    </div>
+            {{-- Leaflet map container --}}
+            <div
+                id="incident-map"
+                class="h-[28rem] w-full overflow-hidden rounded-xl ring-1 ring-slate-200 dark:ring-slate-700 sm:h-[34rem]"
+                role="region"
+                aria-label="{{ __('Interactive incident map') }}"
+            ></div>
 
-                    <div class="space-y-2.5">
-                        @foreach ($rows as $rowLetter => $gates)
-                            <div class="flex items-center gap-3">
-                                <div class="flex h-9 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-500 dark:bg-slate-800 dark:text-slate-400">{{ $rowLetter }}</div>
-                                <div class="flex gap-1.5">
-                                    @foreach ($gates as $gate)
-                                        @php($hasIncidents = $gate['count'] > 0)
-                                        <div
-                                            class="relative flex h-9 w-9 items-center justify-center rounded-lg border text-[10px] font-mono font-medium transition-all duration-200 hover:scale-110 hover:z-10
-                                                {{ $hasIncidents
-                                                    ? 'border-red-300 bg-red-100 text-red-800 shadow-sm dark:border-red-500/40 dark:bg-red-500/20 dark:text-red-200'
-                                                    : 'border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-500' }}"
-                                            title="{{ __('Gate') }} {{ $gate['code'] }}: {{ $gate['count'] }} {{ __('incident(s)') }}"
-                                        >
-                                            <span>{{ $gate['code'] }}</span>
-
-                                            @if ($hasIncidents)
-                                                <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4">
-                                                    <span class="absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75 animate-ping"></span>
-                                                    <span class="relative inline-flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-bold text-white shadow">{{ $gate['count'] }}</span>
-                                                </span>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
+            {{-- Map payload consumed by resources/js/incident-map.js --}}
+            @php
+                $incidentMapPayload = [
+                    'config' => $mapConfig,
+                    'gates' => $gates,
+                    'conditionMeta' => $conditionMeta,
+                ];
+            @endphp
+            <script type="application/json" id="incident-map-data">
+                @json($incidentMapPayload)
+            </script>
         </div>
 
         <p class="text-xs text-slate-400 dark:text-slate-500">
-            {{ __('Synthetic terminal schematic — gate counts are computed from incident records (Eloquent groupBy location). Hover a gate to see its count.') }}
+            {{ __('Synthetic geographic map — gate coordinates are deterministic synthetic offsets around a fictional airport center; counts are computed from incident records (Eloquent). Tiles © OpenStreetMap contributors, © CARTO.') }}
         </p>
     </div>
+
+    @push('styles')
+        <style>
+            /* Subtle center "terminal" label rendered as a Leaflet divIcon. */
+            .incident-map-airport-label span {
+                display: inline-block;
+                padding: 2px 8px;
+                font-size: 11px;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+                color: #475569;
+                background: rgba(255, 255, 255, 0.75);
+                border-radius: 9999px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+            }
+
+            .dark .incident-map-airport-label span {
+                color: #cbd5e1;
+                background: rgba(15, 23, 42, 0.7);
+            }
+        </style>
+    @endpush
 </x-app-layout>
